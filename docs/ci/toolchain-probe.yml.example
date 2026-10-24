@@ -1,0 +1,21 @@
+name: HarmonyOS cloud toolchain probe
+on: [push, workflow_dispatch]
+permissions:
+  contents: read
+jobs:
+  probe:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v4
+      - name: Download official Linux Command Line Tools
+        shell: bash
+        run: |
+          set -euo pipefail
+          url=https://repo.huaweicloud.com/harmonyos/ohpm/5.1.0/commandline-tools-linux-x64-5.1.0.840.zip
+          curl --fail --location --max-time 600 "$url.sha256" -o sdk.sha256
+          curl --fail --location --max-time 600 "$url" -o sdk.zip
+          echo "$(cat sdk.sha256 | cut -d ' ' -f1)  sdk.zip" | sha256sum -c -
+          unzip -q sdk.zip -d "$RUNNER_TEMP/harmony"
+          find "$RUNNER_TEMP/harmony" -maxdepth 6 \( -name hvigorw -o -name ohpm -o -name sdk-pkg.json -o -name oh-uni-package.json -o -name package.json \) | head -100
+          find "$RUNNER_TEMP/harmony" -maxdepth 5 -type d | head -100
