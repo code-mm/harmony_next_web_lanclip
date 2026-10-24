@@ -12,8 +12,8 @@ export default class EntryAbility extends UIAbility {
       try {
         await mainWindow.setWindowLayoutFullScreen(false);
         if (deviceInfo.deviceType !== '2in1') {
-          await mainWindow.setWindowSystemBarProperties({ statusBarColor: '#F4F7F3', statusBarContentColor: '#173D3A',
-            navigationBarColor: '#F4F7F3', navigationBarContentColor: '#173D3A' });
+          await mainWindow.setWindowSystemBarProperties({ statusBarColor: '#F4F5F7', statusBarContentColor: '#252D38',
+            navigationBarColor: '#F4F5F7', navigationBarContentColor: '#252D38' });
         }
         mainWindow.getUIContext().setKeyboardAvoidMode(KeyboardAvoidMode.RESIZE);
       } catch (_) { /* Default window insets still apply if an optional style is unavailable. */ }

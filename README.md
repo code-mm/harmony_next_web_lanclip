@@ -6,7 +6,7 @@
 
 ## 构建和安装
 
-包名 `com.codemm.lanclip`，版本 `1.0.0 / code 1`。声明 HarmonyOS 5.0.5 / API 17 起；本轮实际构建 SDK 26.0.0.105，设备验收为专用 HarmonyOS 7 / API 26 模拟器，未声称 API 17 真机通过。
+包名 `com.codemm.lanclip`，版本 `1.0.1 / code 2`。声明 HarmonyOS 5.0.5 / API 17 起；实际构建 SDK 26.0.0.105。本轮已用合法 Debug 签名在 Mate 60 Pro / HarmonyOS 7 安装，API 17 仍未验收。
 
 使用官方 DevEco Studio/SDK、DevEco CLI 1.3.9、Node.js 22.19.0：
 
@@ -23,7 +23,15 @@ devecocli check lint
 devecocli build --assemble-type assembleHap
 ```
 
-若 CLI 不在 PATH，设置 `DEVECOCLI=/绝对路径/devecocli`。输出 `entry/build/default/outputs/default/entry-default-unsigned.hap`。这是未签名开发 HAP，已在本轮专用模拟器安装；真机需在 DevEco Studio 为本应用配置合法 Debug 签名重新构建。仓库不含签名材料。
+若 CLI 不在 PATH，设置 `DEVECOCLI=/绝对路径/devecocli`。仓库默认不含签名配置，输出 `entry/build/default/outputs/default/entry-default-unsigned.hap`；真机必须使用本应用的合法签名。已授权的开发者可在本机执行以下流程，生成含目标设备的 Debug Profile：
+
+```sh
+devecocli auth login --no-prompt
+devecocli signature generate --product default --type debug
+devecocli build --assemble-type assembleHap
+```
+
+签名后制品为 `entry/build/default/outputs/default/entry-default-signed.hap`。签名工具会更新本机 `build-profile.json5`；不要提交其中的本机签名配置。私钥、Profile、证书、密码和设备标识不入库；公开源码保持可移植的无签名配置。Debug HAP 只用于 Profile 允许的设备，不是应用市场发布包。
 
 ```sh
 devecocli device list --format json
@@ -33,10 +41,12 @@ shasum -a 256 entry/build/default/outputs/default/entry-default-unsigned.hap
 
 ## 使用
 
-1. 与 LanClip 服务连接同一 Wi-Fi / 以太网，点击扫描，或输入完整本地服务地址。默认端口 9000、9001，可添加已知端口。
+1. 与 LanClip 服务连接同一 Wi-Fi / 以太网，启动时自动进行一次有限扫描；也可以点击“扫描服务”或展开“手动连接”。默认端口 9000、9001，额外设置内可修改探测端口。
 2. 验证公开服务标识后进入该服务原网页；密码在网页中填写。
-3. 网页文件输入调用鸿蒙系统选择器，下载使用认证 URL/现有查询参数和系统保存选择器。原生“粘贴”只在用户点击时向当前主页面发送粘贴事件，处理局域网 HTTP 的剪贴板限制。
-4. “发现”暂时隐藏同一个 Web 实例，“回到网页”保留页面状态。Web 的 DOM storage/Cookie 按 origin 保存网页会话；切换服务不会把原服务密码交给新服务。
+3. 网页文件输入调用鸿蒙系统选择器，下载使用认证 URL/现有查询参数和系统保存选择器。“更多”中的系统粘贴按钮只在用户点击时向当前主页面发送粘贴事件，处理局域网 HTTP 的剪贴板限制。
+4. 顶部主页图标暂时隐藏同一个 Web 实例，“回到网页”保留页面状态。Web 的 DOM storage/Cookie 按 origin 保存网页会话；切换服务不会把原服务密码交给新服务。
+
+发现页与 Android 现有布局对齐：灰白卡片、黄色雷达、带验证状态与连接按钮的服务行、折叠手动连接/端口设置，以及返回、主页、刷新和更多图标。系统文件选择/保存及安全粘贴仍使用鸿蒙平台控件。
 
 ## 原生部分的范围
 
@@ -53,16 +63,18 @@ shasum -a 256 entry/build/default/outputs/default/entry-default-unsigned.hap
 
 云端模板位于 [docs/ci/harmony.yml.example](docs/ci/harmony.yml.example)，尚未执行。将来启用需要 workflow 写入权限及官方 Linux CLT 下载地址/SHA（模板仓库变量说明）。
 
-[协议与平台边界](docs/protocol.md) · [本轮实际验收记录](docs/acceptance.md)
+[协议与平台边界](docs/protocol.md) · [1.0.0 模拟器验收](docs/acceptance.md) · [1.0.1 真机与界面验收](docs/acceptance-phone-1.0.1.md)
 
-API 17 真机、家庭 Wi-Fi/mDNS、平板/折叠/横屏、多选和大文件/故障矩阵仍需分别验证。系统文档选择每次最多 10 个；主动图片粘贴限制编码 8 MB/32M 像素，较大图片使用网页文件选择器；流式下载上限 4 GB/10 分钟，未做 4 GB 实机验收。没有使用原生重写版的测试冒充 ArkWeb 结果。
+真实 Wi-Fi 上已发现默认端口与 mDNS 非默认端口服务；原网页显示已连接。2.5 MB 合成文件通过系统选择器上传及保存，手机导出文件独立读回后的大小/SHA-256 与源文件一致。1.0.1 覆盖安装后已确认网页会话保留。逐版本验证范围见真机验收记录。
 
-本轮不涉及 Android APK 版本/双源更新、HarmonyOS 正式签名、公开 Release 或应用市场提交。
+API 17、其他 Wi-Fi/路由器、平板/折叠/横屏、多选和大文件/故障矩阵仍需分别验证。系统文档选择每次最多 10 个；主动图片粘贴限制编码 8 MB/32M 像素，较大图片使用网页文件选择器；流式下载上限 4 GB/10 分钟，未做 4 GB 实机验收。
+
+本轮不涉及 Android APK 版本/双源更新、HarmonyOS 发布签名、公开 Release 或应用市场提交。
 
 ## 本轮制品
 
-`1.0.0 / code 1`，未签名开发 HAP，164,095 字节。
+`1.0.1 / code 2`，本机 Debug 签名 HAP，246,715 字节，仅供已授权真机调试。二进制和签名材料不发布到源码仓库。
 
 ```text
-SHA-256 128ac10250b7263df509b84e302f45c573a03c98f142d87ed93c9fd02e7b6c7c
+SHA-256 881a81a7f8a2cc0644f2e8667641637281593d3089a3a5604e3578fe546b0e3f
 ```
