@@ -1,0 +1,56 @@
+# Example only: this workflow has NOT executed in the current GitHub account.
+# Enable after granting workflow permission and configuring an official CLT archive.
+name: HarmonyOS native checks
+on:
+  push:
+    branches: ['codex/**', main]
+  pull_request:
+  workflow_dispatch:
+permissions:
+  contents: read
+jobs:
+  build:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 30
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22.19.0'
+      - uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+      - name: Pure protocol policy tests
+        run: node --disable-warning=ExperimentalWarning --test tests/policy.test.mjs
+      - name: Official Command Line Tools
+        env:
+          CLT_URL: ${{ vars.HARMONYOS_CLT_URL }}
+          CLT_SHA256: ${{ vars.HARMONYOS_CLT_SHA256 }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          # Select an official Linux CLT >=26 archive (bundled SDK/API tools required).
+          [[ "$CLT_URL" =~ ^https://(repo\.huaweicloud\.com|developer\.huawei\.com)/ ]]
+          [[ "$CLT_SHA256" =~ ^[a-fA-F0-9]{64}$ ]]
+          curl --fail --location --max-time 900 "$CLT_URL" -o "$RUNNER_TEMP/clt.zip"
+          echo "$CLT_SHA256  $RUNNER_TEMP/clt.zip" | sha256sum -c -
+          mkdir -p "$RUNNER_TEMP/harmony-clt"
+          unzip -q "$RUNNER_TEMP/clt.zip" -d "$RUNNER_TEMP/harmony-clt"
+          # Set the directory containing sdk/, hvigor/, ohpm/ in the supplied archive.
+          clt_root=$(find "$RUNNER_TEMP/harmony-clt" -maxdepth 3 -type d -name sdk -print -quit)
+          test -n "$clt_root"
+          echo "DEVECO_CLI_CLT_PATH=$(dirname "$clt_root")" >> "$GITHUB_ENV"
+          npm install --global @deveco/deveco-cli@1.3.9
+      - name: ArkTS, lint and HAP
+        run: ./scripts/check.sh
+      - name: Checksum
+        shell: bash
+        run: find entry/build/default/outputs -name '*.hap' -type f -exec sha256sum {} \; > build/checks/hap.sha256
+      - uses: actions/upload-artifact@v4
+        with:
+          name: LanClip-HarmonyOS-unsigned
+          path: |
+            entry/build/default/outputs/**/*.hap
+            build/checks/
+          if-no-files-found: error

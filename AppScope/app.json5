@@ -1,10 +1,1 @@
-{
-  "app": {
-    "bundleName": "com.codemm.lanclip",
-    "vendor": "example",
-    "versionCode": 1000000,
-    "versionName": "1.0.0",
-    "icon": "$media:layered_image",
-    "label": "$string:app_name"
-  }
-}
+{"app":{"bundleName":"com.codemm.lanclip","vendor":"code-mm","versionCode":1,"versionName":"1.0.0","icon":"$media:lanclip","label":"$string:app_name"}}
