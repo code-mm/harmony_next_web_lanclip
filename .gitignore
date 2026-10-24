@@ -10,7 +10,9 @@
 /.clang-tidy
 **/.test
 /.appanalyzer
-/.cache*.p12
+/.cache/
+*.p12
+/.certs/
 *.p7b
 *.cer
 *.csr
@@ -19,3 +21,6 @@
 .DS_Store
 node_modules/
 private/
+
+.cache/
+.deveco-cli/

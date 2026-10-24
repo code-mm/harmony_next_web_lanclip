@@ -1,16 +1,1 @@
-{
-  "string": [
-    {
-      "name": "module_desc",
-      "value": "module description"
-    },
-    {
-      "name": "EntryAbility_desc",
-      "value": "description"
-    },
-    {
-      "name": "EntryAbility_label",
-      "value": "label"
-    }
-  ]
-}
+{"string":[{"name":"module_desc","value":"LanClip 局域网网页客户端"},{"name":"EntryAbility_desc","value":"发现服务并打开 LanClip 原网页"},{"name":"EntryAbility_label","value":"LanClip"}]}
